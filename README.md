@@ -1,85 +1,70 @@
 # Outpost
 
-**A human-in-the-loop security triage workspace where analysts and AI agents investigate findings, preserve judgment, and build explainable remediation sprints through browser-native WebMCP tools.**
+Organize security findings, record review decisions, and build remediation plans that fit your engineering capacity.
 
-Outpost is a complete OpenAI WebMCP Challenge project. It ships a polished manual application and exposes the same domain operations to compatible agents with `document.modelContext.registerTool(...)`. The UI and every WebMCP tool mutate one shared, durable browser workspace—no shadow database, fake tool buttons, or DOM-click simulation.
+[Open Outpost](https://outpost-webmcp.alx21.chatgpt.site/) · [WebMCP tools](WEBMCP.md) · [Architecture](ARCHITECTURE.md)
 
+Outpost is free to use in the browser. Start with an empty review, enter your own findings, or load the clearly labeled fictional example. Compatible browser agents can inspect and update the same workspace through 14 WebMCP tools. Ordinary browsers support the full manual workflow.
 
+![Outpost example review](docs/outpost-desktop.png)
 
-## Why WebMCP fits
+## Start a review
 
-Security triage is structured but contextual. Agents are good at scanning many findings, comparing evidence, and fitting work into a limited sprint. Humans must retain control of severity, acceptance, and scheduling decisions. Without WebMCP, an agent has to infer the page, locate controls, click through menus, and guess whether a change worked. Outpost instead exposes explicit, schema-validated capabilities with visible effects and provenance.
+1. Choose **Rename** to name the review, then **Add finding**. Record the component, description, severity, exploitability, impact, confidence, estimated engineering days, reasoning, remediation plan, and optional evidence references and tags.
+2. Open a finding to edit it, add notes, change status or severity, lock its decisions, or adjust its relative priority. **Findings** provides search and filters; **Compare findings** accepts two to six IDs.
+3. Use **Add to sprint** for explicit scope, or open **Remediation Sprint** to suggest work by priority per engineering day. Rebalance by score, effort, or score per day. Plans must fit capacity, including locked items.
+4. Mark work resolved only after your own verification. Removing a finding from the sprint reopens it; recording another status removes it from the sprint. Scheduling alone never counts as resolution.
+5. Choose **Export backup** regularly. **Import backup** validates a complete Outpost JSON backup before replacing the active review, and asks before replacing a nonempty workspace. **Undo** keeps the last 20 saved changes until reload.
 
-Humans can:
+## What is saved
 
-- review evidence, reasoning, and remediation guidance;
-- adjust severity and workflow status;
-- attach context, lock decisions, remove sprint items, undo, and reset the demo;
-- see which actions came from a human, an agent, or the system.
+Findings, notes, sprint scope, locks, comparisons, and the latest 100 activity entries are saved in this browser's local storage. A successful edit is shown only after persistence succeeds. Failed writes and invalid imports preserve the previous workspace. If stored data cannot be read, the page offers its raw data for download before an explicit recovery reset.
 
-Agents can:
+Use one editing tab at a time. An observed change from another tab blocks stale edits until reload. This is not multiuser synchronization or an atomic cross-tab database. There are no accounts or shared server-side reviews. Clearing browser data removes local work; a backup is the way to restore or move it to another browser.
 
-- list and inspect findings;
-- compare and reprioritize a selected set;
-- calculate a transparent risk summary;
-- create capacity-aware remediation sprints from an explicit selection or a one-call risk, effort, or risk-to-effort optimization;
-- add notes and propose status or severity changes;
-- retrieve activity history.
+Limits: 100 findings, 200 notes per finding, 30 evidence entries per finding, 4 MB per imported backup, and sprint capacity of 0.5–60 engineering days. Browser storage quotas may be lower than a large workspace requires; failed saves are reported.
 
-Human locks are enforced in the domain layer. An agent cannot change a locked rating or move a locked finding. Accepted risk and resolved work are excluded from automatic scheduling, while manual sprint removals remain excluded during later optimization and rebalancing.
+## What the scores mean
 
-## WebMCP implementation
+The priority score is a transparent heuristic, not CVSS or a verified risk measurement:
 
-Outpost feature-detects the current imperative API on `document.modelContext`, with the deprecated `navigator.modelContext` location only as a compatibility fallback. Fourteen tools are registered with JSON Schema inputs, focused descriptions, and current `readOnlyHint` / `untrustedContentHint` annotations. An `AbortController` unregisters the page's tool set during React cleanup.
+`round((severity × 5 + exploitability × 8 + impact × 8) × confidence)`
 
-The tool handlers call the same immutable functions used by the React interface:
+Severity weights are 10/8/5/2; exploitability and impact are 3/2/1; confidence multipliers are 1/.9/.7/.5. Scores range from 13 to 98. The workspace triage score averages all finding scores with resolved items contributing zero. Accepted and scheduled findings keep their score. Recorded resolution is resolved findings divided by all findings. Sprint coverage is the share of unresolved priority points selected for the plan, not an estimate of real-world risk reduction.
 
-```text
-Human controls ─┐
-                ├─> validated WorkspaceApi ─> browser-persisted state ─> visible UI
-WebMCP tools ───┘                              └─> provenance activity log
-```
+Automatic selection is greedy, not guaranteed optimal. It excludes accepted and resolved findings and preserves locked scope and manual exclusions. Humans can explicitly add previously excluded or accepted findings back through the finding panel. Agents can add a lock but cannot remove one. Notes remain possible on locked findings.
 
-Read [WEBMCP.md](./WEBMCP.md) for the complete tool catalog and testing prompts, and [ARCHITECTURE.md](./ARCHITECTURE.md) for trust boundaries and state semantics.
+Outpost organizes information you supply. It does not scan systems, reproduce vulnerabilities, implement remediations, or verify that a fix worked. Activity actor labels indicate the interface or tool path; they are not authenticated identities or a tamper-proof audit log. Finding contents returned to agents are untrusted data.
 
 ## Run locally
 
-Requirements: Node.js 22.13+ and pnpm.
+Requires Node.js 24+ and pnpm 11.19.0. No API key or database is needed.
 
-```bash
-pnpm install
+```sh
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open `http://localhost:3000`. The full manual workflow works in ordinary browsers. For agent tools, use ChatGPT's in-app browser or a compatible Chrome build with WebMCP enabled.
+Open the localhost address printed by the development server. To run the built Worker locally:
 
-## Verify
+```sh
+pnpm build
+pnpm start --port 3014
+```
 
-```bash
+WebMCP requires a browser exposing the supported imperative registration API. The page shows its actual registration status; without it, use the manual controls. An open page is required for page-side tools; this is not a remote MCP server.
+
+## Verify changes
+
+```sh
 pnpm typecheck
 pnpm test
 pnpm lint
 pnpm build
+pnpm exec playwright install chromium
+pnpm test:e2e
 ```
 
-The tests cover the scoring formula, input validation, immutability, provenance, human-lock enforcement, sprint capacity, and preserved human exclusions.
+The unit tests cover domain invariants, schema validation, backup integrity, migration, and failed or stale storage writes. Browser tests run against the built Worker and cover a personal review through backup/restore, corrupted storage, failed saves, stale tabs, mobile rendering, and page-side tool behavior. Browser CI uses a registration test adapter; native WebMCP discovery and execution are checked separately in a compatible browser.
 
-## Defensive data only
-
-All 18 seeded findings, product names, evidence items, and review events are fictional. The demo contains no live target data, credentials, exploit payloads, or offensive automation. See [SECURITY.md](./SECURITY.md).
-
-## Documentation
-
-- [WEBMCP.md](./WEBMCP.md) — tools, schemas, demo prompts, browser support
-- [ARCHITECTURE.md](./ARCHITECTURE.md) — state model, trust boundaries, safety properties
-- [JUDGES.md](./JUDGES.md) — two-minute evaluator path
-- [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) — narrated video script
-- [DEVPOST_SUBMISSION.md](./DEVPOST_SUBMISSION.md) — submission-ready project story
-- [CONTRIBUTING.md](./CONTRIBUTING.md) — local contribution workflow
-
-Additional verified interface captures are in [`demo/screenshots`](./demo/screenshots): the WebMCP tool surface, finding evidence view, capacity-aware sprint, and human/agent activity history.
-
-## License
-
-MIT — see [LICENSE](./LICENSE).
-
+The checked-in Sites hosting configuration identifies the existing public deployment. Forks should configure their own hosting rather than publishing to that project. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the [MIT license](LICENSE).

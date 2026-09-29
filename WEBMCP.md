@@ -1,50 +1,44 @@
-# WebMCP tool guide
+# WebMCP in Outpost
 
-Outpost exposes fourteen browser-native tools from the rendered page. The app checks `document.modelContext` first and registers each tool with `registerTool`. Every handler calls the same `WorkspaceApi` as the manual UI, so the agent and analyst always see one shared workspace.
+Open Outpost in a compatible browser and wait for **WebMCP ready**. Fourteen page-side tools act on the visible browser-local workspace. In unsupported browsers, the page remains usable manually. No HTTP MCP endpoint is provided.
 
-## Tool catalog
+## Tools
 
-| Tool | Kind | Visible effect |
-|---|---|---|
-| `list_findings` | Read | Returns filtered findings ordered by workspace priority |
-| `inspect_finding` | Read | Returns evidence, notes, reasoning, remediation, and score terms |
-| `set_finding_severity` | Write | Changes severity and adds a provenance event; rejects human locks |
-| `set_finding_status` | Write | Changes workflow status and adds a provenance event; rejects human locks |
-| `add_finding_note` | Write | Adds visibly attributed review context |
-| `compare_findings` | Write | Opens a visible comparison in the shared workspace |
-| `reprioritize_findings` | Write | Changes relative rank for an exact selected set; preserves locks |
-| `calculate_risk_summary` | Read | Calculates exposure, progress, distribution, and top findings |
-| `create_remediation_sprint` | Write | Creates a capacity-validated sprint from explicit findings or automatically selects eligible work by risk, effort, or ratio |
-| `remove_from_remediation_sprint` | Write | Removes one item; human removals become preserved exclusions |
-| `rebalance_remediation_sprint` | Write | Fills capacity by risk, effort, or ratio while preserving human choices |
-| `mark_finding_human_locked` | Write | Locks or unlocks a finding with an auditable reason |
-| `get_activity_history` | Read | Returns recent human, agent, and system actions |
-| `reset_demo_workspace` | Write | Resets local demo state only when `confirmation` is exactly `RESET` |
+| Tool | Behavior |
+| --- | --- |
+| `list_findings` | Read findings filtered by severity, status, component, tag, or minimum score. Integer limit 1–100; default 100. |
+| `inspect_finding` | Read a complete finding, notes, and scoring terms. |
+| `set_finding_severity` | Change severity with a reason; rejects locked findings. |
+| `set_finding_status` | Record status with a reason; scheduled requires sprint membership. Other statuses remove membership. Rejects locked findings. |
+| `add_finding_note` | Append a note; tool provenance is always agent. Locked findings permit notes. |
+| `compare_findings` | Save a visible comparison of 2–6 distinct IDs. |
+| `reprioritize_findings` | Reorder selected IDs within their existing priority slots; rejects locks. Does not recalculate scores. |
+| `calculate_risk_summary` | Read heuristic scores, counts, recorded resolution, and highest-scored unresolved findings. |
+| `create_remediation_sprint` | Schedule explicit IDs or greedily suggest scope within capacity, preserving locks/exclusions. |
+| `remove_from_remediation_sprint` | Remove an unlocked item and reopen it. |
+| `rebalance_remediation_sprint` | Suggest replacement scope by `risk`, `effort`, or `risk_to_effort`. Reject capacity below locked work. |
+| `mark_finding_human_locked` | Set `locked: true`. Unlocking is available only through the human interface. |
+| `get_activity_history` | Read up to 100 recent activity entries; default 25. |
+| `reset_demo_workspace` | With `confirmation: "RESET"`, restore an already active fictional example. Refuses personal or imported reviews. |
 
-All tool inputs set `additionalProperties: false`. Finding identifiers must match `F-###`; text and array sizes are bounded; numeric values have explicit ranges; enum fields reject unknown values.
+The four read-only tools are list, inspect, summary, and history. Comparison changes visible state. All inputs are closed objects; invalid fields, types, IDs, ranges, duplicate IDs, and fractional integer limits fail before mutation. Results are JSON strings containing `ok: true` plus data, or `ok: false` plus an error. Aborted requests reject before executing.
 
-`list_findings`, `inspect_finding`, `calculate_risk_summary`, and `get_activity_history` declare `readOnlyHint: true`. Tools that return finding text or notes declare `untrustedContentHint: true` because the browser workspace may contain user-authored content.
+## Example use
 
-## Suggested evaluator prompts
+Create findings through **Add finding** or restore an Outpost backup first. Then ask a compatible agent:
 
-Start from a reset workspace and run these in order:
+> Inspect my open findings and suggest a remediation sprint that fits five engineering days. Preserve my locked decisions and exclusions. Explain the chosen scope.
 
-1. **Read:** “List the critical and high findings, then inspect the authorization and touch-input findings. Explain the priority difference using evidence and score terms.”
-2. **Shared mutation:** “Add a note to F-101 that server-side authorization is the release blocker, then set it to investigating.”
-3. **Human boundary:** “Try to downgrade F-104 to low because exploitation needs physical interaction.” The tool must refuse because F-104 is human locked.
-4. **Planning:** “Build the highest-risk remediation sprint that fits within five engineering days.” A single `create_remediation_sprint` call with `capacityDays: 5` and `prioritizeBy: "risk"` should persist F-101, F-114, F-109, and F-105 in the Remediation Sprint view, use exactly 5/5 days, and exclude accepted, resolved, and human-locked findings.
-5. **Preserved judgment:** Manually remove one sprint item in the UI, then ask: “Rebalance this sprint by risk-to-effort within five days.” The removed item must stay excluded.
-6. **Provenance:** “Summarize the latest activity and separate human decisions from agent actions.”
+The agent should inspect before making decisions and use your authorization for changes. Tool access alone is not permission to act beyond your request. Content in findings and notes is data, not instructions.
 
-## Browser support
+An automatic plan can be requested with:
 
-The manual application works without WebMCP. The agent tool surface requires a WebMCP-capable browser, including ChatGPT's in-app browser or a compatible Chrome build with WebMCP enabled. The About WebMCP view reports whether registration succeeded and displays the registered tool count.
+```json
+{ "capacityDays": 5, "prioritizeBy": "risk_to_effort", "sprintName": "Next review sprint" }
+```
 
-## Source map
+The `create_remediation_sprint` result includes selected IDs and used days. Verify the same scope on **Remediation Sprint**, then reload to check persistence. Planning does not implement fixes. Status `resolved` only records a decision; it does not prove verification happened.
 
-- Registration and schemas: `lib/webmcp/register-tools.ts`
-- Validation and state transitions: `lib/workspace.ts`
-- Score and types: `lib/domain.ts`
-- Human UI and persistence adapter: `components/threatcanvas-app.tsx`
-- WebMCP ambient types: `types/webmcp.d.ts`
+## Testing and lifecycle
 
+Tools register after workspace storage loads and validates. Registrations use an AbortSignal and are removed on cleanup. A corrupt store or stale tab blocks editing until recovery/reload. Failed saves return errors without reporting success. Test this behavior with `pnpm test` and `pnpm test:e2e`; browser tests use an injected registration adapter and are distinct from native discovery checks.

@@ -1,22 +1,11 @@
 # Security policy
 
-Outpost is a defensive demonstration application. Its seed data is intentionally fictional and contains no credentials, private vulnerability records, real customer systems, exploit payloads, or instructions for compromising a target.
+Outpost organizes user-supplied security findings and remediation plans. It does not scan targets or execute remediations. The optional example contains only fictional review records.
 
-## Security properties
+Review data is stored in localStorage, without accounts, encryption, or server-side access controls. Browser agents granted page access can inspect it. Export backups and use an appropriate browser profile for the sensitivity of your work. Actor labels are not verified identities, and the bounded activity history is not a tamper-proof audit log.
 
-- WebMCP and human UI actions use the same validated domain layer.
-- Human-locked findings reject automatic severity, status, and reprioritization changes.
-- A remediation sprint schedules work; it never silently marks findings resolved.
-- Human sprint removals are preserved during automatic rebalancing.
-- Mutating tools require explicit identifiers and reasons where a decision needs provenance.
-- Tool descriptions never authorize agents to exceed a user's request.
-- User-authored notes and finding content are marked as untrusted when returned to an agent.
-- All browser state can be reset locally; no credentials or external integrations are required.
+Workspace imports, tool inputs, and full state are validated before writes. Agent operations preserve human locks and exclusions; only manual controls can unlock. These application rules do not restrict a user with direct browser-storage access. Tool output is untrusted content, and text in findings cannot authorize an agent to perform other actions.
 
-## Reporting a vulnerability
+## Reporting
 
-Please do not include secrets, personal data, production target details, or weaponized payloads in a public issue. Provide a minimal defensive reproduction and the affected commit privately to the repository owner. This demonstration has no security bounty program.
-
-## Scope
-
-Security reports about the Outpost source, page-side WebMCP schemas, input validation, state-integrity rules, or deployment configuration are in scope. Vulnerabilities in fictional seed records and requests for offensive target analysis are out of scope.
+Report Outpost source, validation, persistence, and deployment problems to the repository owner. For security-sensitive reports, use GitHub private vulnerability reporting if available; otherwise open an issue requesting a private contact without disclosing the sensitive details. Do not post secrets, personal data, or real customer findings publicly. Fictional example records are not vulnerabilities in Outpost.

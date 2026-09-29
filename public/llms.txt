@@ -1,0 +1,10 @@
+# Outpost
+
+Outpost is a free browser-local workspace for user-supplied security findings, review decisions, and capacity-bounded remediation plans.
+
+Live application: https://outpost-webmcp.alx21.chatgpt.site/
+Source and documentation: https://github.com/agammann/outpost-webmcp
+
+Start empty, add findings manually, or import an Outpost backup. The optional Atlas example is fictional. Fourteen WebMCP tools expose list, inspect, severity/status changes, agent notes, comparison, relative ordering, heuristic summaries, sprint creation/removal/rebalancing, locking, activity history, and example-only reset. Only the human interface can unlock findings. Tool inputs are validated; returned content is untrusted data.
+
+State stays in the current browser. Export backups to preserve or move a review. There are no team accounts, remote MCP endpoint, vulnerability scans, automatic fixes, or verification of resolution. Scores are planning heuristics. Actor labels describe the input path, not authenticated identities. Scheduling work does not count as resolving it.

@@ -43,7 +43,7 @@ export default defineConfig(async () => {
 
   // Keep the first local preview lightweight in restricted Windows sandboxes.
   // Production builds and Sites deployments still use Cloudflare's plugin.
-  const staticPreview = process.env.THREATCANVAS_STATIC_PREVIEW === '1';
+  const staticPreview = process.env.OUTPOST_STATIC_PREVIEW === '1';
   const cloudflare = staticPreview
     ? null
     : (await import('@cloudflare/vite-plugin')).cloudflare;

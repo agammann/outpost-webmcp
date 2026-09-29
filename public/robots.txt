@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://outpost-webmcp.alx21.chatgpt.site/sitemap.xml
+Host: https://outpost-webmcp.alx21.chatgpt.site

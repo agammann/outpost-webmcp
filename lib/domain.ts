@@ -1,7 +1,18 @@
 export const SEVERITIES = ['critical', 'high', 'medium', 'low'] as const;
-export const STATUSES = ['open', 'investigating', 'accepted', 'scheduled', 'resolved'] as const;
+export const STATUSES = [
+  'open',
+  'investigating',
+  'accepted',
+  'scheduled',
+  'resolved',
+] as const;
 export const LEVELS = ['high', 'medium', 'low'] as const;
-export const CONFIDENCE_LEVELS = ['confirmed', 'high', 'medium', 'low'] as const;
+export const CONFIDENCE_LEVELS = [
+  'confirmed',
+  'high',
+  'medium',
+  'low',
+] as const;
 
 export type Severity = (typeof SEVERITIES)[number];
 export type FindingStatus = (typeof STATUSES)[number];
@@ -57,6 +68,8 @@ export type Sprint = {
 };
 
 export type WorkspaceState = {
+  name: string;
+  example: boolean;
   findings: Finding[];
   activity: ActivityEntry[];
   sprint: Sprint | null;
@@ -66,9 +79,19 @@ export type WorkspaceState = {
   lastAgentAction: string | null;
 };
 
-const severityWeight: Record<Severity, number> = { critical: 10, high: 8, medium: 5, low: 2 };
+const severityWeight: Record<Severity, number> = {
+  critical: 10,
+  high: 8,
+  medium: 5,
+  low: 2,
+};
 const levelWeight: Record<Level, number> = { high: 3, medium: 2, low: 1 };
-const confidenceMultiplier: Record<Confidence, number> = { confirmed: 1, high: 0.9, medium: 0.7, low: 0.5 };
+const confidenceMultiplier: Record<Confidence, number> = {
+  confirmed: 1,
+  high: 0.9,
+  medium: 0.7,
+  low: 0.5,
+};
 
 export function priorityScore(finding: Finding) {
   const raw =
@@ -89,26 +112,47 @@ export function priorityFormula(finding: Finding) {
 }
 
 export function riskSummary(findings: Finding[]) {
-  const counts = Object.fromEntries(SEVERITIES.map((severity) => [severity, findings.filter((f) => f.severity === severity && f.status !== 'resolved').length])) as Record<Severity, number>;
+  const counts = Object.fromEntries(
+    SEVERITIES.map((severity) => [
+      severity,
+      findings.filter((f) => f.severity === severity && f.status !== 'resolved')
+        .length,
+    ]),
+  ) as Record<Severity, number>;
   const resolved = findings.filter((f) => f.status === 'resolved').length;
-  const statusFactor: Record<FindingStatus, number> = { open: 1, investigating: 0.95, accepted: 0.45, scheduled: 0.75, resolved: 0 };
-  const exposure = Math.round(findings.reduce((sum, f) => sum + priorityScore(f) * statusFactor[f.status], 0) / Math.max(1, findings.length));
-  const highestPriority = [...findings].filter((f) => f.status !== 'resolved').sort((a, b) => priorityScore(b) - priorityScore(a)).slice(0, 5);
+  const statusFactor: Record<FindingStatus, number> = {
+    open: 1,
+    investigating: 1,
+    accepted: 1,
+    scheduled: 1,
+    resolved: 0,
+  };
+  const exposure = Math.round(
+    findings.reduce(
+      (sum, f) => sum + priorityScore(f) * statusFactor[f.status],
+      0,
+    ) / Math.max(1, findings.length),
+  );
+  const highestPriority = [...findings]
+    .filter((f) => f.status !== 'resolved')
+    .sort((a, b) => priorityScore(b) - priorityScore(a))
+    .slice(0, 5);
   return {
     counts,
     resolved,
     total: findings.length,
     exposure,
-    progress: Math.round(((resolved + findings.filter((f) => f.status === 'scheduled').length * 0.5) / findings.length) * 100),
+    progress: Math.round((resolved / Math.max(1, findings.length)) * 100),
     highestPriority,
   };
 }
 
 export function formatLabel(value: string) {
-  return value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase());
+  return value
+    .replaceAll('_', ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export function safeId(prefix: string) {
   return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 }
-
