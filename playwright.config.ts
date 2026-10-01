@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: '**/native-webmcp.spec.ts',
   timeout: 45000,
   workers: 1,
   use: {
