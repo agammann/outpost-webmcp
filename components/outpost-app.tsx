@@ -205,6 +205,11 @@ export function OutpostApp() {
   const [undoCount, setUndoCount] = useState(0);
   const workspaceRef = useRef(workspace);
   const undoRef = useRef<WorkspaceState[]>([]);
+  const savedSprintCapacity = workspace.sprint?.capacityDays ?? 5;
+
+  useEffect(() => {
+    setSprintCapacity(savedSprintCapacity);
+  }, [savedSprintCapacity]);
 
   const syncState = useCallback((next: WorkspaceState) => {
     workspaceRef.current = next;

@@ -220,6 +220,26 @@ test('all fourteen native tools share visible durable state, locks, capacity and
   });
   await navigate(page, 'Remediation Sprint');
   await expect(page.getByText('3.5 / 4 days', { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole('spinbutton', { name: 'Capacity', exact: true }),
+  ).toHaveValue('4');
+  await page
+    .getByRole('spinbutton', { name: 'Capacity', exact: true })
+    .fill('3');
+  expect(
+    (
+      await call(page, 'add_finding_note', {
+        findingId: 'F-102',
+        note: 'Unrelated edits preserve the capacity draft.',
+      })
+    ).ok,
+  ).toBe(true);
+  await expect(
+    page.getByRole('spinbutton', { name: 'Capacity', exact: true }),
+  ).toHaveValue('3');
+  await page
+    .getByRole('spinbutton', { name: 'Capacity', exact: true })
+    .fill('4');
   expect(
     (
       await call(page, 'remove_from_remediation_sprint', {
@@ -272,6 +292,10 @@ test('all fourteen native tools share visible durable state, locks, capacity and
   ).toBe(true);
   await page.reload();
   await ready(page);
+  await navigate(page, 'Remediation Sprint');
+  await expect(
+    page.getByRole('spinbutton', { name: 'Capacity', exact: true }),
+  ).toHaveValue('4');
   const restored = (await call(page, 'inspect_finding', { findingId: 'F-101' }))
     .finding;
   expect(restored).toMatchObject({
