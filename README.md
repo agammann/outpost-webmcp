@@ -41,6 +41,8 @@ Outpost organizes information you supply. It does not scan systems, reproduce vu
 Requires Node.js 24+ and pnpm 11.19.0. No API key or database is needed.
 
 ```sh
+git clone https://github.com/agammann/outpost-webmcp.git
+cd outpost-webmcp
 pnpm install --frozen-lockfile
 pnpm dev
 ```
@@ -52,7 +54,7 @@ pnpm build
 pnpm start --port 3014
 ```
 
-WebMCP requires a browser exposing the supported imperative registration API. The page shows its actual registration status; without it, use the manual controls. An open page is required for page-side tools; this is not a remote MCP server.
+WebMCP is experimental and requires a browser exposing the supported imperative registration API. For local Chrome development, enable `chrome://flags/#enable-webmcp-testing` and relaunch, following the [Chrome WebMCP guide](https://developer.chrome.com/docs/ai/webmcp). The page shows its actual registration status; without it, use the manual controls. An open page is required for page-side tools; this is not a remote MCP server.
 
 ## Verify changes
 
@@ -63,8 +65,15 @@ pnpm lint
 pnpm build
 pnpm exec playwright install chromium
 pnpm test:e2e
+pnpm audit
+pnpm exec playwright install chrome
+pnpm test:webmcp
 ```
 
-The unit tests cover domain invariants, schema validation, backup integrity, migration, and failed or stale storage writes. Browser tests run against the built Worker and cover a personal review through backup/restore, corrupted storage, failed saves, stale tabs, mobile rendering, and page-side tool behavior. Browser CI uses a registration test adapter; native WebMCP discovery and execution are checked separately in a compatible browser.
+The 22 unit tests cover domain invariants, schema validation, backup integrity, migration, and failed or stale storage writes. Eight ordinary browser tests run against the built Worker and cover a personal review through backup/restore, corrupted storage, failed saves, stale tabs, mobile rendering, and a registration adapter. Five separate native browser tests use the browser's actual `document.modelContext`, discover all 14 tools, execute every tool, and check visible state, reload persistence, locks, capacity, Undo, invalid inputs, failed saves, stale tabs, cleanup, and back-forward caching. CI runs both suites against the production Worker and retains the native JSON report. See [WEBMCP.md](WEBMCP.md) for commands and the dated compatibility results.
+
+## Build on it
+
+The [architecture guide](ARCHITECTURE.md) maps the app's domain operations, validated storage, and browser-tool adapter. A useful starting point is to adapt the fictional example to a different review process while keeping the same invariants: save before acknowledging a change, preserve human locks, reject invalid backups, and show tool actions in the same interface a person uses.
 
 The checked-in Sites hosting configuration identifies the existing public deployment. Forks should configure their own hosting rather than publishing to that project. See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md), and the [MIT license](LICENSE).

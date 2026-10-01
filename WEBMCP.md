@@ -41,4 +41,27 @@ The `create_remediation_sprint` result includes selected IDs and used days. Veri
 
 ## Testing and lifecycle
 
-Tools register after workspace storage loads and validates. Registrations use an AbortSignal and are removed on cleanup. A corrupt store or stale tab blocks editing until recovery/reload. Failed saves return errors without reporting success. Test this behavior with `pnpm test` and `pnpm test:e2e`; browser tests use an injected registration adapter and are distinct from native discovery checks.
+Tools register after workspace storage loads and validates. Registrations use an AbortSignal and are removed on effect cleanup and `pagehide`, then restored on a persisted `pageshow`. A corrupt store or stale tab withdraws tools and blocks editing until recovery/reload. The status follows registration readiness. Failed saves return errors without reporting success.
+
+`pnpm test` checks domain and storage invariants. `pnpm test:e2e` runs eight ordinary-browser scenarios, including an injected registration adapter. `pnpm test:webmcp` runs five separate scenarios with the browser's native API and no registration shim. It checks all 14 schemas and titles, executes every tool on a fictional example, verifies visible edits and reload persistence, and exercises locks, capacity, Undo, invalid inputs, storage failure, stale tabs, and actual back-forward caching.
+
+Build first, then run the suites sequentially:
+
+```sh
+pnpm build
+pnpm exec playwright install chromium chrome
+pnpm test:e2e
+pnpm test:webmcp
+```
+
+The ordinary suite starts the production Worker on port 3014; the native suite uses port 3018. Native tests enable `--enable-features=WebMCP` in an isolated Chrome profile. They do not alter your normal browser profile. To test installed Edge, set `OUTPOST_WEBMCP_CHANNEL=msedge`. To test a deployed instance, set `OUTPOST_WEBMCP_URL` to its URL. Each scenario gets fresh browser-local storage, so its fictional edits do not change another user's review. The live lifecycle check records whether the host allowed back-forward caching; the local check requires an actual cached restoration.
+
+WebMCP is experimental. Follow the [Chrome setup guide](https://developer.chrome.com/docs/ai/webmcp) and [imperative API reference](https://developer.chrome.com/docs/ai/webmcp/imperative-api). Chrome 154 accepts a JSON string in `executeTool`; the test helper selects the object form described for Chrome 155 when applicable. A passing result on the versions below does not establish compatibility with every browser or agent client.
+
+Verified on September 30, 2026:
+
+| Environment | Observed result |
+| --- | --- |
+| Windows Chrome 154.0.8037.93 with WebMCP enabled | Five native scenarios passed against the production Worker, including all 14 tools and actual back-forward caching. |
+| Windows Edge 154.0.4258.48 with WebMCP enabled | The same five native scenarios passed against the production Worker. |
+| Codex in-app browser | All 14 tools executed against a separate local fictional workspace. Notes and sprint scope appeared visibly; Undo, locks, capacity rejection, reload persistence, and example reset worked. |

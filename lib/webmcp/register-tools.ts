@@ -731,33 +731,64 @@ export function useWebMcpRegistration(api: WorkspaceApi, ready = true) {
   const tools = useMemo(() => createWebMcpTools(api), [api]);
 
   useEffect(() => {
-    if (!ready) return;
+    if (!ready) {
+      setStatus('checking');
+      setError(null);
+      return;
+    }
     const context = document.modelContext ?? navigator.modelContext;
     if (!context) {
       setStatus('unavailable');
       return;
     }
-    const controller = new AbortController();
-    setStatus('checking');
-    Promise.all(
-      tools.map((tool) =>
-        context.registerTool(tool, { signal: controller.signal }),
-      ),
-    )
-      .then(() => {
-        if (controller.signal.aborted) return;
-        setError(null);
-        setStatus('ready');
-      })
-      .catch((cause) => {
-        if (controller.signal.aborted) return;
-        controller.abort();
-        setError(
-          cause instanceof Error ? cause.message : 'Tool registration failed.',
-        );
-        setStatus('error');
-      });
-    return () => controller.abort();
+    let controller: AbortController | null = null;
+    let disposed = false;
+    const register = () => {
+      if (disposed) return;
+      controller?.abort();
+      const current = new AbortController();
+      controller = current;
+      setStatus('checking');
+      setError(null);
+      Promise.all(
+        tools.map((tool) =>
+          Promise.resolve().then(() => {
+            if (current.signal.aborted) return;
+            return context.registerTool(tool, { signal: current.signal });
+          }),
+        ),
+      )
+        .then(() => {
+          if (current.signal.aborted) return;
+          setStatus('ready');
+        })
+        .catch((cause) => {
+          if (current.signal.aborted) return;
+          current.abort();
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : 'Tool registration failed.',
+          );
+          setStatus('error');
+        });
+    };
+    const hide = () => {
+      controller?.abort();
+      setStatus('checking');
+    };
+    const show = (event: PageTransitionEvent) => {
+      if (event.persisted) register();
+    };
+    window.addEventListener('pagehide', hide);
+    window.addEventListener('pageshow', show);
+    register();
+    return () => {
+      disposed = true;
+      controller?.abort();
+      window.removeEventListener('pagehide', hide);
+      window.removeEventListener('pageshow', show);
+    };
   }, [tools, ready]);
 
   return { status, error, count: tools.length, tools };
