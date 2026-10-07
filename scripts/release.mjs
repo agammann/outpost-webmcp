@@ -137,7 +137,7 @@ const publish = async ({ github, context, core }) => {
   const notes = changelog.split(heading)[1].split('\n## ')[0].trim();
   const body =
     notes +
-    '\n\nDownload the source ZIP and verify SHA256SUMS. Node.js 24+ and pnpm 11.19.0 are required. The source includes the MIT license and frozen lockfile. The full audit retains one explicitly accepted, unpatched high-severity braces finding classified as a production dependency; the strict release policy verifies only that documented exception and live patch availability. This is not a zero-finding audit. The hosted deployment requires its separate acceptance check.\n\n' +
+    '\n\nDownload the source ZIP and verify SHA256SUMS. Node.js 24+ and pnpm 11.19.0 are required. The source includes the MIT license and frozen lockfile. The hosted deployment requires its separate acceptance check.\n\n' +
     '[Installation, upgrade and recovery](https://github.com/' +
     owner +
     '/' +
