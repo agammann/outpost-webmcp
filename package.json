@@ -1,6 +1,7 @@
 {
   "name": "outpost",
-  "version": "1.1.0",
+  "version": "1.1.1",
+  "license": "MIT",
   "private": true,
   "engines": {
     "node": ">=24.0.0"
@@ -15,7 +16,10 @@
     "lint": "oxlint -A react/react-compiler app components lib types tests e2e",
     "format": "oxfmt",
     "test:e2e": "playwright test",
-    "test:webmcp": "playwright test --config playwright.webmcp.config.ts"
+    "test:webmcp": "playwright test --config playwright.webmcp.config.ts",
+    "package:release": "node scripts/package-release.mjs",
+    "test:audit-policy": "node --test scripts/audit-policy.test.mjs",
+    "security:audit": "node scripts/audit-policy.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

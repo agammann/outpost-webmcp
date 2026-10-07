@@ -6,6 +6,8 @@ Organize security findings, record review decisions, and build remediation plans
 
 Outpost is free to use in the browser. Start with an empty review, enter your own findings, or load the clearly labeled fictional example. Compatible browser agents can inspect and update the same workspace through 14 WebMCP tools. Ordinary browsers support the full manual workflow.
 
+Source version **1.1.1** provides this bounded v1 workspace, with [upgrade and recovery guidance](docs/STABILITY.md). Available patched dependency updates are applied. The full dependency audit still reports one explicitly accepted, unpatched high-severity braces finding, classified as a production dependency. The required release policy accepts only that exact finding after live advisory and registry checks; see [the dependency release gate](SECURITY.md#dependency-release-gate).
+
 ![Outpost example review](docs/outpost-desktop.png)
 
 ## Start a review
@@ -40,6 +42,8 @@ Outpost organizes information you supply. It does not scan systems, reproduce vu
 
 Requires Node.js 24+ and pnpm 11.19.0. No API key or database is needed.
 
+A source distribution is packaged as `outpost_1.1.1_source.zip`, its matching `.sha256` file and `SHA256SUMS`. Verify the ZIP before unpacking: PowerShell `Get-FileHash outpost_1.1.1_source.zip -Algorithm SHA256`, or Linux `sha256sum -c SHA256SUMS`. Enter the extracted `outpost-1.1.1` directory and run the same frozen install below. The ZIP includes the MIT license, frozen lockfile, fictional example and recovery guide.
+
 ```sh
 git clone https://github.com/agammann/outpost-webmcp.git
 cd outpost-webmcp
@@ -66,11 +70,17 @@ pnpm build
 pnpm exec playwright install chromium
 pnpm test:e2e
 pnpm audit
+pnpm test:audit-policy
+pnpm security:audit
 pnpm exec playwright install chrome
 pnpm test:webmcp
 ```
 
 The 22 unit tests cover domain invariants, schema validation, backup integrity, migration, and failed or stale storage writes. Eight ordinary browser tests run against the built Worker and cover a personal review through backup/restore, corrupted storage, failed saves, stale tabs, mobile rendering, and a registration adapter. Five separate native browser tests use the browser's actual `document.modelContext`, discover all 14 tools, execute every tool, and check visible state, reload persistence, locks, capacity, Undo, invalid inputs, failed saves, stale tabs, cleanup, and back-forward caching. CI runs both suites against the production Worker and retains the native JSON report. See [WEBMCP.md](WEBMCP.md) for commands and the dated compatibility results.
+
+The source package helper requires a clean committed tree and uses that exact commit. CI verifies the ZIP's tracked file set, source bytes and checksums, then installs, builds and runs ordinary/native cases from a fresh extraction outside the checkout. Only a verified main push can publish its source artifact. The full raw audit remains required and currently exits 1 for the accepted high-severity production dependency finding. `pnpm security:audit` retains that report, verifies the exact documented exception and fails on changed findings, unavailable verification metadata or a newly available patch. This is not a zero-finding audit.
+
+Current local checks on October 6, 2026 used Windows, Node.js 24.19.0, pnpm 11.19.0, Playwright 1.58.2 and Chrome 155.0.8059.39. The bounded fresh ordinary journey imported 18 fictional findings, reviewed and reordered decisions, created a five-day plan, edited it to eight days, rejected invalid capacity/import without changing saved data, and restored exported content exactly in a fresh browser context after reload. Desktop/mobile controls and search worked. The separate native cases used the real browser API and all 14 tools. These local observations do not certify a newly published source release or hosted deployment.
 
 ## Build on it
 
