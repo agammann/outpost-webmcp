@@ -43,9 +43,4 @@ export/import is the supported transfer. Source distributions include the MIT
 license. Removing source files does not clear browser data. To retire a hosted
 copy, preserve backups before using the hosting service's normal removal controls.
 
-The release retains one explicitly accepted unpatched high-severity braces
-finding, classified as a production dependency by the full audit. Available
-patched updates are applied; see [the exact dependency release
-gate](../SECURITY.md#dependency-release-gate). A passing policy accepts that one
-recorded residual finding and does not mean an audit with no findings. Source
-packaging and local acceptance do not certify a separate hosted deployment.
+Source distributions include the MIT license and frozen lockfile. Hosted delivery has a separate acceptance check.
