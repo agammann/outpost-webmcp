@@ -3,6 +3,7 @@ allowBuilds:
   sharp: true
   workerd: true
 overrides:
+  braces: file:vendor/bounded-braces
   'sharp@<0.35.5': 0.35.5
   'source-map-js@<1.2.2': 1.2.2
   'tinypool@<2.1.2': 2.1.2

@@ -6,6 +6,7 @@ Keep domain operations immutable and keep UI and WebMCP on the same persistence 
 
 Before proposing changes, run `pnpm typecheck`, `pnpm test`, `pnpm lint`, `pnpm build`, `pnpm exec playwright install chromium`, and `pnpm test:e2e`. Review desktop/mobile rendering when editing the interface. Never commit generated builds, local reviews, browser profiles, credentials, or test traces.
 
-For source release changes, review the full `pnpm audit`, run `pnpm test:audit-policy` and `pnpm security:audit`, install Chrome with `pnpm exec playwright install chrome`, and run `pnpm test:webmcp`. The native suite must discover the real API and fails when unavailable. The release policy accepts only the explicitly approved exact unpatched finding described in SECURITY.md; every other finding, unavailable metadata or newly available patch blocks release.
+For source release changes, review the full `pnpm audit`, run `pnpm test:audit-policy` and `pnpm security:audit`, install Chrome with `pnpm exec playwright install chrome`, and run `pnpm test:webmcp`. The native suite must discover the real API and fails when unavailable. The release policy requires a complete dependency audit with zero advisories; the former braces exception has been removed.
 
 Commit the reviewed source before `pnpm package:release`. Verify and unpack it into a new folder outside the checkout with `python scripts/unpack-release.py --out ../outpost-clean-consumer`, then use a fresh frozen install and build there. CI also runs both browser suites from that extraction. Keep ZIPs, checksum files and browser evidence outside committed source. Source release acceptance and hosted deployment acceptance are separate checks.
+
