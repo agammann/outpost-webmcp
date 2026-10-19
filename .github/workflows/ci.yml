@@ -41,6 +41,7 @@ jobs:
       - run: pnpm package:release
       - run: python scripts/unpack-release.py --out ../outpost-clean-consumer
       - run: pnpm --dir ../outpost-clean-consumer install --frozen-lockfile
+      - run: pnpm --dir ../outpost-clean-consumer exec node --test scripts/bounded-braces.test.cjs
       - run: pnpm --dir ../outpost-clean-consumer build
       - run: pnpm --dir ../outpost-clean-consumer test:e2e
       - run: pnpm --dir ../outpost-clean-consumer test:webmcp --reporter=list,json
