@@ -50,7 +50,7 @@
     "oxlint-tsgolint": "7.0.2001",
     "tailwindcss": "4.2.1",
     "typescript": "5.9.3",
-    "vite": "8.2.2",
+    "vite": "8.2.4",
     "wrangler": "4.145.0",
     "@agammann/bounded-braces": "file:vendor/bounded-braces"
   },
