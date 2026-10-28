@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { z } from 'zod';
 import { riskSummary } from '../lib/domain.js';
 import { createSeedWorkspace } from '../lib/seed-data.js';
 import {
@@ -45,7 +46,11 @@ void test('own findings survive portable backup round trip and edits', () => {
   assert.equal(state.findings[0].effortDays, 2);
   assert.throws(
     () => saveFinding(state, { ...input, effortDays: 0 }),
-    /greater than or equal/,
+    (error: unknown) =>
+      error instanceof z.ZodError &&
+      error.issues.some(
+        (issue) => issue.code === 'too_small' && issue.path[0] === 'effortDays',
+      ),
   );
 });
 void test('empty score is finite and scheduling does not claim remediation', () => {
