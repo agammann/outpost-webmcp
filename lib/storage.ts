@@ -11,7 +11,7 @@ import {
 
 const text = (max: number, min = 1) => z.string().trim().min(min).max(max);
 const id = z.string().regex(/^F-[0-9]{3,6}$/);
-const date = z.string().datetime();
+const date = z.iso.datetime();
 const actor = z.enum(['human', 'agent', 'system']);
 const ids = z
   .array(id)
@@ -29,7 +29,7 @@ export const findingInput = z
     evidence: z.array(text(1200)).max(30),
     reasoning: text(4000),
     remediation: text(4000),
-    effortDays: z.number().finite().min(0.5).max(60),
+    effortDays: z.number().min(0.5).max(60),
     tags: z.array(text(60)).max(20),
   })
   .strict();
