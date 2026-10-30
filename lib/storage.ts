@@ -10,6 +10,10 @@ import {
 } from './domain.js';
 
 const text = (max: number, min = 1) => z.string().trim().min(min).max(max);
+export const MAX_BACKUP_BYTES = 4_000_000;
+const backupTooLarge = (raw: string) =>
+  raw.length > MAX_BACKUP_BYTES ||
+  new TextEncoder().encode(raw).byteLength > MAX_BACKUP_BYTES;
 const id = z.string().regex(/^F-[0-9]{3,6}$/);
 const date = z.iso.datetime();
 const actor = z.enum(['human', 'agent', 'system']);
@@ -147,9 +151,7 @@ export function validateWorkspace(value: unknown): WorkspaceState {
   return state;
 }
 
-export function parseWorkspace(raw: string): WorkspaceState {
-  if (raw.length > 4_000_000)
-    throw new Error('Workspace backups must be smaller than 4 MB.');
+function parseWorkspaceValue(raw: string): WorkspaceState {
   const value = JSON.parse(raw);
   if (value?.format === 'outpost-workspace') {
     if (value.version !== 1) throw new Error('Unsupported backup version.');
@@ -181,7 +183,13 @@ export function parseWorkspace(raw: string): WorkspaceState {
   return validateWorkspace(value);
 }
 
-export const serializeWorkspace = (state: WorkspaceState) =>
+export function parseWorkspace(raw: string): WorkspaceState {
+  if (backupTooLarge(raw))
+    throw new Error('Workspace backups must be 4 MB or smaller.');
+  return parseWorkspaceValue(raw);
+}
+
+const stringifyWorkspace = (state: WorkspaceState) =>
   JSON.stringify(
     {
       format: 'outpost-workspace',
@@ -191,6 +199,15 @@ export const serializeWorkspace = (state: WorkspaceState) =>
     null,
     2,
   );
+
+export function serializeWorkspace(state: WorkspaceState) {
+  const raw = stringifyWorkspace(state);
+  if (backupTooLarge(raw))
+    throw new Error(
+      'Backup exceeds the 4 MB import limit. Shorten notes or evidence before exporting; your workspace is unchanged.',
+    );
+  return raw;
+}
 
 export function saveFinding(
   state: WorkspaceState,
@@ -244,14 +261,26 @@ export class WorkspaceStore {
   ) {}
   load() {
     this.raw = this.storage.getItem(this.key);
-    return this.raw === null ? emptyWorkspace() : parseWorkspace(this.raw);
+    if (this.raw === null) return emptyWorkspace();
+    // Keep previously saved Unicode workspaces readable even when their
+    // UTF-8 backup would exceed the import limit. The historical storage
+    // guard counted UTF-16 units; users can trim an existing large review.
+    if (this.raw.length > MAX_BACKUP_BYTES)
+      throw new Error('Workspace backups must be smaller than 4 MB.');
+    return parseWorkspaceValue(this.raw);
   }
   save(state: WorkspaceState) {
     if (this.storage.getItem(this.key) !== this.raw)
       throw new Error(
         'Another tab changed this workspace. Reload before editing.',
       );
-    const next = serializeWorkspace(state);
+    const next = stringifyWorkspace(state);
+    // Local storage keeps the historical UTF-16 limit so a successful save
+    // is always readable by load(), including older Unicode workspaces.
+    if (next.length > MAX_BACKUP_BYTES)
+      throw new Error(
+        'Workspace exceeds the 4 MB local storage limit. Shorten notes or evidence; saved workspace is unchanged.',
+      );
     this.storage.setItem(this.key, next);
     this.raw = next;
   }

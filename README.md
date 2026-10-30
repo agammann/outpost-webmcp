@@ -24,7 +24,7 @@ Findings, notes, sprint scope, locks, comparisons, and the latest 100 activity e
 
 Use one editing tab at a time. An observed change from another tab blocks stale edits until reload. This is not multiuser synchronization or an atomic cross-tab database. There are no accounts or shared server-side reviews. Clearing browser data removes local work; a backup is the way to restore or move it to another browser.
 
-Limits: 100 findings, 200 notes per finding, 30 evidence entries per finding, 4 MB per imported backup, and sprint capacity of 0.5–60 engineering days. Browser storage quotas may be lower than a large workspace requires; failed saves are reported.
+Limits: 100 findings, 200 notes per finding, 30 evidence entries per finding, 4,000,000 UTF-8 bytes per imported or exported backup, and sprint capacity of 0.5-60 engineering days. Browser storage quotas may be lower than a large workspace requires; failed saves are reported.
 
 ## What the scores mean
 
