@@ -6,7 +6,7 @@ Organize security findings, record review decisions, and build remediation plans
 
 Outpost is free to use in the browser. Start with an empty review, enter your own findings, or load the clearly labeled fictional example. Compatible browser agents can inspect and update the same workspace through 14 WebMCP tools. Ordinary browsers support the full manual workflow.
 
-Source version **1.1.2** provides this bounded v1 workspace, with [upgrade and recovery guidance](docs/STABILITY.md). Available patched dependency updates are applied.
+Source version **1.1.3** provides this bounded v1 workspace, with [upgrade and recovery guidance](docs/STABILITY.md). Available patched dependency updates are applied.
 
 ![Outpost example review](docs/outpost-desktop.png)
 
@@ -42,7 +42,7 @@ Outpost organizes information you supply. It does not scan systems, reproduce vu
 
 Requires Node.js 24+ and pnpm 11.19.0. No API key or database is needed.
 
-A source distribution is packaged as `outpost_1.1.2_source.zip`, its matching `.sha256` file and `SHA256SUMS`. Verify the ZIP before unpacking: PowerShell `Get-FileHash outpost_1.1.2_source.zip -Algorithm SHA256`, or Linux `sha256sum -c SHA256SUMS`. Enter the extracted `outpost-1.1.2` directory and run the same frozen install below. The ZIP includes the MIT license, frozen lockfile, fictional example and recovery guide.
+A source distribution is packaged as `outpost_1.1.3_source.zip`, its matching `.sha256` file and `SHA256SUMS`. Verify the ZIP before unpacking: PowerShell `Get-FileHash outpost_1.1.3_source.zip -Algorithm SHA256`, or Linux `sha256sum -c SHA256SUMS`. Enter the extracted `outpost-1.1.3` directory and run the same frozen install below. The ZIP includes the MIT license, frozen lockfile, fictional example and recovery guide.
 
 ```sh
 git clone https://github.com/agammann/outpost-webmcp.git

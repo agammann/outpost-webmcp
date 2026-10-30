@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.3
+
+- Count UTF-8 bytes consistently for imported and exported backups, and explain how to shorten an oversized backup without changing the workspace.
+- Keep existing large Unicode browser workspaces readable while rejecting a local save that would fail to reload.
+
 ## 1.1.2
 
 - Replace the unbounded brace dependency with a maintained compatibility package that preserves ordinary glob behavior and the upstream license.

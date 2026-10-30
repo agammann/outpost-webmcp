@@ -1,6 +1,6 @@
 # Outpost v1 support, upgrades and recovery
 
-Source release 1.1.1 preserves the ordinary browser workspace: record and edit
+Source release 1.1.3 preserves the ordinary browser workspace: record and edit
 supplied findings, review severity/status/notes, adjust relative priorities,
 create and edit a capacity-bounded sprint, reload, and export/import version 1
 JSON backups. The optional example contains 18 fictional findings. Planning is
@@ -39,7 +39,7 @@ reload and review current work before editing. For quota errors, preserve an
 export before reducing records or using another profile. There is no recovery
 if browser data and backups are both lost.
 
-Upgrading source from 1.1.0 to 1.1.1 requires Node.js 24+, pnpm 11.19.0 and the
+Upgrading source through 1.1.3 requires Node.js 24+, pnpm 11.19.0 and the
 frozen lockfile. No runtime or backup-schema migration is introduced. Keeping
 the same origin retains the workspace; another origin starts separately and
 export/import is the supported transfer. Source distributions include the MIT
