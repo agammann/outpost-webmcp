@@ -10,6 +10,7 @@ import {
 } from '@/lib/domain';
 import {
   emptyWorkspace,
+  MAX_BACKUP_BYTES,
   parseWorkspace,
   saveFinding,
   serializeWorkspace,
@@ -300,8 +301,8 @@ export function WorkspaceControls({
           e.target.value = '';
           if (!file) return;
           try {
-            if (file.size > 4_000_000)
-              throw new Error('Backup must be smaller than 4 MB.');
+            if (file.size > MAX_BACKUP_BYTES)
+              throw new Error('Backup must be 4 MB or smaller.');
             const next = parseWorkspace(await file.text());
             replace({ ...next, example: false });
           } catch (cause) {

@@ -37,6 +37,77 @@ const input = {
   tags: ['policy'],
 };
 
+function oversizedUnicodeBackup() {
+  const state = emptyWorkspace();
+  const { lockReason: _lockReason, ...template } =
+    createSeedWorkspace().findings[0];
+  const evidence = Array.from({ length: 30 }, () => 'é'.repeat(700));
+  state.findings = Array.from({ length: 100 }, (_, index) => ({
+    ...template,
+    id: `F-${index + 101}`,
+    priorityRank: index + 1,
+    status: 'open' as const,
+    relatedFindingIds: [],
+    notes: [],
+    humanLocked: false,
+    evidence,
+  }));
+  const raw = JSON.stringify(
+    { format: 'outpost-workspace', version: 1, workspace: state },
+    null,
+    2,
+  );
+  assert.ok(raw.length < 4_000_000);
+  assert.ok(Buffer.byteLength(raw, 'utf8') > 4_000_000);
+  return { state, raw };
+}
+
+void test('backup import limit counts UTF-8 bytes, not UTF-16 characters', () => {
+  const { raw } = oversizedUnicodeBackup();
+  assert.throws(() => parseWorkspace(raw), /4 MB/);
+});
+
+void test('export refuses a backup too large to import without changing the workspace', () => {
+  const { state } = oversizedUnicodeBackup();
+  const before = structuredClone(state);
+  assert.throws(() => serializeWorkspace(state), /4 MB.*notes or evidence/);
+  assert.deepEqual(state, before);
+});
+
+void test('an existing large Unicode browser workspace remains readable', () => {
+  const { state, raw } = oversizedUnicodeBackup();
+  let saved = raw;
+  const store = new WorkspaceStore({
+    getItem: () => saved,
+    setItem: (_key, value) => {
+      saved = value;
+    },
+  });
+  assert.deepEqual(store.load(), validateWorkspace(state));
+  store.save(state);
+  assert.ok(Buffer.byteLength(saved, 'utf8') > 4_000_000);
+});
+
+void test('local save rejects a workspace it cannot reload and keeps the last saved state', () => {
+  const state = oversizedUnicodeBackup().state;
+  for (const finding of state.findings) {
+    finding.evidence = Array.from({ length: 30 }, () => 'A'.repeat(1200));
+    finding.description = 'B'.repeat(4000);
+  }
+  let saved = serializeWorkspace(emptyWorkspace());
+  const previous = saved;
+  const store = new WorkspaceStore({
+    getItem: () => saved,
+    setItem: (_key, value) => {
+      saved = value;
+    },
+  });
+  store.load();
+  assert.throws(() => store.save(state), /4 MB.*saved workspace/);
+  assert.equal(saved, previous);
+  assert.deepEqual(store.load(), emptyWorkspace());
+});
+
 void test('own findings survive portable backup round trip and edits', () => {
   let state = saveFinding(emptyWorkspace(), input);
   assert.equal(state.example, false);

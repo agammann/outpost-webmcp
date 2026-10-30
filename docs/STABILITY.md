@@ -1,6 +1,6 @@
 # Outpost v1 support, upgrades and recovery
 
-Source release 1.1.1 preserves the ordinary browser workspace: record and edit
+Source release 1.1.3 preserves the ordinary browser workspace: record and edit
 supplied findings, review severity/status/notes, adjust relative priorities,
 create and edit a capacity-bounded sprint, reload, and export/import version 1
 JSON backups. The optional example contains 18 fictional findings. Planning is
@@ -12,8 +12,11 @@ no accounts, shared server reviews, cloud synchronization or built-in encryption
 Use one editing tab at a time. An observed change from another tab blocks stale
 editing until reload. Failed saves and rejected backups preserve previous saved
 content. Limits are 100 findings, 200 notes and 30 evidence references per finding,
-4 MB per backup and 0.5–60 engineering days of capacity. Browser quotas may be
+4,000,000 UTF-8 bytes per imported or exported backup and 0.5-60 engineering days of capacity. Browser quotas may be
 lower than those application limits.
+Existing browser workspaces retain the historical character limit when loaded.
+If an older Unicode workspace exceeds the backup byte limit, shorten notes or
+evidence before exporting; failed exports leave the workspace in place.
 
 Within v1, version 1 exported backups remain readable, and the documented 14
 WebMCP tool names and validated arguments remain supported. Ordinary controls
@@ -36,7 +39,7 @@ reload and review current work before editing. For quota errors, preserve an
 export before reducing records or using another profile. There is no recovery
 if browser data and backups are both lost.
 
-Upgrading source from 1.1.0 to 1.1.1 requires Node.js 24+, pnpm 11.19.0 and the
+Upgrading source through 1.1.3 requires Node.js 24+, pnpm 11.19.0 and the
 frozen lockfile. No runtime or backup-schema migration is introduced. Keeping
 the same origin retains the workspace; another origin starts separately and
 export/import is the supported transfer. Source distributions include the MIT
