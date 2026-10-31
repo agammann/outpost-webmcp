@@ -38,6 +38,7 @@ jobs:
       - run: pnpm test:webmcp --reporter=list,json
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: test-results/native-webmcp.json
+      - run: python scripts/test-unpack-release.py
       - run: pnpm package:release
       - run: python scripts/unpack-release.py --out ../outpost-clean-consumer
       - run: pnpm --dir ../outpost-clean-consumer install --frozen-lockfile
