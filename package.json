@@ -50,7 +50,7 @@
     "oxlint": "1.76.0",
     "oxlint-tsgolint": "7.0.2001",
     "tailwindcss": "4.3.5",
-    "typescript": "5.9.3",
+    "typescript": "7.0.2",
     "vite": "8.2.4",
     "wrangler": "4.145.0"
   },
