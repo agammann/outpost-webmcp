@@ -55,6 +55,8 @@ Open the localhost address printed by the development server. To run the built W
 
 ```sh
 pnpm build
+pnpm verify:worker-types
+pnpm verify:worker-output
 pnpm start --port 3014
 ```
 
@@ -79,6 +81,8 @@ pnpm test:webmcp
 The 22 unit tests cover domain invariants, schema validation, backup integrity, migration, and failed or stale storage writes. Eight ordinary browser tests run against the built Worker and cover a personal review through backup/restore, corrupted storage, failed saves, stale tabs, mobile rendering, and a registration adapter. Five separate native browser tests use the browser's actual `document.modelContext`, discover all 14 tools, execute every tool, and check visible state, reload persistence, locks, capacity, Undo, invalid inputs, failed saves, stale tabs, cleanup, and back-forward caching. CI runs both suites against the production Worker and retains the native JSON report. See [WEBMCP.md](WEBMCP.md) for commands and the dated compatibility results.
 
 The source package helper requires a clean committed tree and uses that exact commit. CI verifies the ZIP's tracked file set, source bytes and checksums, then installs, builds and runs ordinary/native cases from a fresh extraction outside the checkout. Only a verified main push can publish its source artifact. Run `pnpm security:audit` when changing dependencies. CI retains the full dependency reports in its artifacts.
+
+This checkout builds its local Worker with compatibility date `2026-11-10` and `nodejs_compat`; source-map upload remains disabled. `worker-configuration.d.ts` contains Wrangler-generated runtime declarations for that date and flags. After building, `pnpm verify:worker-types` checks for drift and `pnpm verify:worker-output` checks the emitted settings and source-map behavior. Regenerate the declarations with `pnpm exec wrangler types worker-configuration.d.ts --config dist/server/wrangler.json --include-env=false --include-main-module=false` after changing the date, flags or runtime. The local fixture does not establish the configuration or API availability of the separately hosted site; verify those before using new Workers APIs or deploying. The published v1.1.3 archive predates this checkout's runtime update.
 
 Current local checks on October 6, 2026 used Windows, Node.js 24.19.0, pnpm 11.19.0, Playwright 1.58.2 and Chrome 155.0.8059.39. The bounded fresh ordinary journey imported 18 fictional findings, reviewed and reordered decisions, created a five-day plan, edited it to eight days, rejected invalid capacity/import without changing saved data, and restored exported content exactly in a fresh browser context after reload. Desktop/mobile controls and search worked. The separate native cases used the real browser API and all 14 tools. These local observations do not certify a newly published source release or hosted deployment.
 

@@ -12,7 +12,9 @@
     "start": "wrangler dev --config dist/server/wrangler.json",
     "typecheck": "tsc --noEmit",
     "test": "tsc -p tsconfig.test.json && node --test --test-isolation=none .test-dist/tests/*.test.js && node --test scripts/bounded-braces.test.cjs",
-    "verify": "pnpm typecheck && pnpm test && pnpm lint && pnpm build",
+    "verify": "pnpm typecheck && pnpm test && pnpm lint && pnpm build && pnpm verify:worker-types && pnpm verify:worker-output",
+    "verify:worker-types": "wrangler types worker-configuration.d.ts --config dist/server/wrangler.json --include-env=false --include-main-module=false --check",
+    "verify:worker-output": "node scripts/verify-worker-output.mjs",
     "lint": "oxlint -A react/react-compiler app components lib types tests e2e",
     "format": "oxfmt",
     "test:e2e": "playwright test",
@@ -36,8 +38,8 @@
   },
   "devDependencies": {
     "@agammann/bounded-braces": "file:vendor/bounded-braces",
-    "@cloudflare/vite-plugin": "1.62.3",
-    "@cloudflare/workers-types": "5.20260930.2",
+    "@cloudflare/vite-plugin": "1.69.1",
+    "@cloudflare/workers-types": "5.20261110.1",
     "@openai/sites-vite-plugin": "0.2.0",
     "@playwright/test": "1.58.2",
     "@tailwindcss/postcss": "4.3.5",
@@ -52,7 +54,7 @@
     "tailwindcss": "4.3.5",
     "typescript": "7.0.2",
     "vite": "8.2.4",
-    "wrangler": "4.145.0"
+    "wrangler": "4.161.0"
   },
   "type": "module",
   "packageManager": "pnpm@11.19.0",
