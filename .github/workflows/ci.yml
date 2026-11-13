@@ -26,6 +26,26 @@ jobs:
         with:
           python-version: '3.12'
       - run: pnpm install --frozen-lockfile
+      - name: Verify published-release no-op with read-only client
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { default: publish } = await import(process.env.GITHUB_WORKSPACE + '/scripts/release.mjs');
+            const messages = [];
+            const { version } = JSON.parse(require('node:fs').readFileSync('package.json', 'utf8'));
+            const listReleases = () => { throw new Error('Fixture must be called through paginate'); };
+            const readOnly = {
+              rest: { repos: { listReleases } },
+              paginate: async (method) => {
+                if (method !== listReleases) throw new Error('Unexpected fixture request');
+                return [{ tag_name: 'v' + version, draft: false }];
+              },
+            };
+            const testContext = { eventName: 'push', ref: 'refs/heads/main', sha: context.sha, repo: context.repo };
+            await publish({ github: readOnly, context: testContext, core: { info: (message) => messages.push(message) } });
+            if (!messages.some((message) => message.includes('already published; leaving it unchanged.'))) {
+              throw new Error('Expected the existing published release to remain unchanged.');
+            }
       - run: pnpm test
       - run: pnpm lint
       - run: pnpm typecheck
@@ -107,7 +127,7 @@ jobs:
         with:
           name: outpost-source
           path: release-artifacts
-      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const { default: publish } = await import(process.env.GITHUB_WORKSPACE + '/scripts/release.mjs');
