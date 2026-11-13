@@ -32,9 +32,14 @@ jobs:
           script: |
             const { default: publish } = await import(process.env.GITHUB_WORKSPACE + '/scripts/release.mjs');
             const messages = [];
+            const { version } = JSON.parse(require('node:fs').readFileSync('package.json', 'utf8'));
+            const listReleases = () => { throw new Error('Fixture must be called through paginate'); };
             const readOnly = {
-              paginate: (...args) => github.paginate(...args),
-              rest: { repos: { listReleases: github.rest.repos.listReleases } },
+              rest: { repos: { listReleases } },
+              paginate: async (method) => {
+                if (method !== listReleases) throw new Error('Unexpected fixture request');
+                return [{ tag_name: 'v' + version, draft: false }];
+              },
             };
             const testContext = { eventName: 'push', ref: 'refs/heads/main', sha: context.sha, repo: context.repo };
             await publish({ github: readOnly, context: testContext, core: { info: (message) => messages.push(message) } });
