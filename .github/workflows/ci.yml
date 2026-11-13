@@ -54,6 +54,8 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm exec playwright install --with-deps chrome
       - run: pnpm build
+      - run: pnpm verify:worker-types
+      - run: pnpm verify:worker-output
       - run: pnpm test:e2e
       - run: pnpm test:webmcp --reporter=list,json
         env:
@@ -64,6 +66,8 @@ jobs:
       - run: pnpm --dir ../outpost-clean-consumer install --frozen-lockfile
       - run: pnpm --dir ../outpost-clean-consumer exec node --test scripts/bounded-braces.test.cjs
       - run: pnpm --dir ../outpost-clean-consumer build
+      - run: pnpm --dir ../outpost-clean-consumer verify:worker-types
+      - run: pnpm --dir ../outpost-clean-consumer verify:worker-output
       - run: pnpm --dir ../outpost-clean-consumer test:e2e
       - run: pnpm --dir ../outpost-clean-consumer test:webmcp --reporter=list,json
         env:
