@@ -6,7 +6,7 @@ Organize security findings, record review decisions, and build remediation plans
 
 Outpost is free to use in the browser. Start with an empty review, enter your own findings, or load the clearly labeled fictional example. Compatible browser agents can inspect and update the same workspace through 14 WebMCP tools. Ordinary browsers support the full manual workflow.
 
-Source version **1.1.3** provides this bounded v1 workspace, with [upgrade and recovery guidance](docs/STABILITY.md). Available patched dependency updates are applied.
+Source version **1.1.4** provides this bounded v1 workspace, with [upgrade and recovery guidance](docs/STABILITY.md), patched Vite development tooling and the checked Worker runtime declarations.
 
 ![Outpost example review](docs/outpost-desktop.png)
 
@@ -42,11 +42,12 @@ Outpost organizes information you supply. It does not scan systems, reproduce vu
 
 Requires Node.js 24+ and pnpm 11.19.0. No API key or database is needed.
 
-A source distribution is packaged as `outpost_1.1.3_source.zip`, its matching `.sha256` file and `SHA256SUMS`. Verify the ZIP before unpacking: PowerShell `Get-FileHash outpost_1.1.3_source.zip -Algorithm SHA256`, or Linux `sha256sum -c SHA256SUMS`. Enter the extracted `outpost-1.1.3` directory and run the same frozen install below. The ZIP includes the MIT license, frozen lockfile, fictional example and recovery guide.
+A source distribution is packaged as `outpost_1.1.4_source.zip`, its matching `.sha256` file and `SHA256SUMS`, from the [1.1.4 release](https://github.com/agammann/outpost-webmcp/releases/tag/v1.1.4). Verify the ZIP before unpacking: PowerShell `Get-FileHash outpost_1.1.4_source.zip -Algorithm SHA256`, or Linux `sha256sum -c SHA256SUMS`. Enter the extracted `outpost-1.1.4` directory and run the same frozen install below. The ZIP includes the MIT license, frozen lockfile, fictional example and recovery guide.
 
 ```sh
 git clone https://github.com/agammann/outpost-webmcp.git
 cd outpost-webmcp
+git checkout v1.1.4
 pnpm install --frozen-lockfile
 pnpm dev
 ```
@@ -78,13 +79,13 @@ pnpm exec playwright install chrome
 pnpm test:webmcp
 ```
 
-The 22 unit tests cover domain invariants, schema validation, backup integrity, migration, and failed or stale storage writes. Eight ordinary browser tests run against the built Worker and cover a personal review through backup/restore, corrupted storage, failed saves, stale tabs, mobile rendering, and a registration adapter. Five separate native browser tests use the browser's actual `document.modelContext`, discover all 14 tools, execute every tool, and check visible state, reload persistence, locks, capacity, Undo, invalid inputs, failed saves, stale tabs, cleanup, and back-forward caching. CI runs both suites against the production Worker and retains the native JSON report. See [WEBMCP.md](WEBMCP.md) for commands and the dated compatibility results.
+The 28 unit tests cover domain invariants, schema validation, backup integrity, migration, and failed or stale storage writes; six additional tests verify the bounded brace tooling. Eight ordinary browser tests run against the built Worker and cover a personal review through backup/restore, corrupted storage, failed saves, stale tabs, mobile rendering, and a registration adapter. Five separate native browser tests use the browser's actual `document.modelContext`, discover all 14 tools, execute every tool, and check visible state, reload persistence, locks, capacity, Undo, invalid inputs, failed saves, stale tabs, cleanup, and back-forward caching. CI runs both suites against the production Worker and retains the native JSON report. See [WEBMCP.md](WEBMCP.md) for commands and the dated compatibility results.
 
 The source package helper requires a clean committed tree and uses that exact commit. CI verifies the ZIP's tracked file set, source bytes and checksums, then installs, builds and runs ordinary/native cases from a fresh extraction outside the checkout. Only a verified main push can publish its source artifact. Run `pnpm security:audit` when changing dependencies. CI retains the full dependency reports in its artifacts.
 
-This checkout builds its local Worker with compatibility date `2026-11-10` and `nodejs_compat`; source-map upload remains disabled. `worker-configuration.d.ts` contains Wrangler-generated runtime declarations for that date and flags. After building, `pnpm verify:worker-types` checks for drift and `pnpm verify:worker-output` checks the emitted settings and source-map behavior. Regenerate the declarations with `pnpm exec wrangler types worker-configuration.d.ts --config dist/server/wrangler.json --include-env=false --include-main-module=false` after changing the date, flags or runtime. The local fixture does not establish the configuration or API availability of the separately hosted site; verify those before using new Workers APIs or deploying. The published v1.1.3 archive predates this checkout's runtime update.
+Source 1.1.4 builds its local Worker with compatibility date `2026-11-10` and `nodejs_compat`; source-map upload remains disabled. `worker-configuration.d.ts` contains Wrangler-generated runtime declarations for that date and flags. After building, `pnpm verify:worker-types` checks for drift and `pnpm verify:worker-output` checks the emitted settings and source-map behavior. Regenerate the declarations with `pnpm exec wrangler types worker-configuration.d.ts --config dist/server/wrangler.json --include-env=false --include-main-module=false` after changing the date, flags or runtime. The local fixture does not establish the configuration or API availability of the separately hosted site; verify those before using new Workers APIs or deploying. The immutable v1.1.3 archive predates this runtime update.
 
-Current local checks on October 6, 2026 used Windows, Node.js 24.19.0, pnpm 11.19.0, Playwright 1.58.2 and Chrome 155.0.8059.39. The bounded fresh ordinary journey imported 18 fictional findings, reviewed and reordered decisions, created a five-day plan, edited it to eight days, rejected invalid capacity/import without changing saved data, and restored exported content exactly in a fresh browser context after reload. Desktop/mobile controls and search worked. The separate native cases used the real browser API and all 14 tools. These local observations do not certify a newly published source release or hosted deployment.
+Earlier local checks on October 6, 2026 used Windows, Node.js 24.19.0, pnpm 11.19.0, Playwright 1.58.2 and Chrome 155.0.8059.39. The bounded fresh ordinary journey imported 18 fictional findings, reviewed and reordered decisions, created a five-day plan, edited it to eight days, rejected invalid capacity/import without changing saved data, and restored exported content exactly in a fresh browser context after reload. Desktop/mobile controls and search worked. The separate native cases used the real browser API and all 14 tools. These dated observations do not certify a newly published source release or hosted deployment.
 
 ## Build on it
 

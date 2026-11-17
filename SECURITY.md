@@ -14,6 +14,13 @@ Report Outpost source, validation, persistence, and deployment problems to the r
 
 Run `pnpm security:audit` when changing dependencies. CI retains the full dependency reports in its artifacts.
 
+Source 1.1.4 uses Vite 8.3.7 with patched Rolldown for
+[GHSA-p4f5-76q4-ffq7](https://github.com/vitejs/vite/security/advisories/GHSA-p4f5-76q4-ffq7).
+The former Vite 8.2.4 falls within the maintainer's affected range even when the
+registry audit returns zero findings. The advisory concerns development servers
+explicitly exposed to the network, not the production Worker. Keep local
+development bound to localhost unless network access is intentional.
+
 
 ## Bounded brace tooling
 

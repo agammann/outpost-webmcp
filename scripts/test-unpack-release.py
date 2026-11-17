@@ -11,6 +11,7 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+PREFIX = f'outpost-{json.loads((ROOT / "package.json").read_text(encoding="utf-8"))["version"]}/'
 PYTHON = sys.executable
 RUNNER = '''import json,runpy,sys,tracemalloc
 tracemalloc.start()
@@ -33,13 +34,13 @@ def run(path, dest):
 with tempfile.TemporaryDirectory(prefix='outpost-zip-test-') as tmp:
     directory = Path(tmp)
     good = directory / 'good.zip'
-    subprocess.run(['git', 'archive', '--format=zip', '--prefix=outpost-1.1.3/', '--output=' + str(good), 'HEAD'], cwd=ROOT, check=True)
+    subprocess.run(['git', 'archive', '--format=zip', '--prefix=' + PREFIX, '--output=' + str(good), 'HEAD'], cwd=ROOT, check=True)
     checksum(good)
     result = run(good, directory / 'good-output')
     assert result.returncode == 0, (result.stdout, result.stderr)
     assert (directory / 'good-output' / 'README.md').is_file()
     print('PASS legitimate committed release archive')
-    for label, name in [('extra', 'outpost-1.1.3/unexpected.bin'), ('expected', 'outpost-1.1.3/README.md')]:
+    for label, name in [('extra', PREFIX + 'unexpected.bin'), ('expected', PREFIX + 'README.md')]:
         crafted = directory / (label + '.zip')
         with zipfile.ZipFile(good) as original, zipfile.ZipFile(crafted, 'w', compression=zipfile.ZIP_DEFLATED) as changed:
             changed.comment = original.comment
@@ -66,7 +67,7 @@ with tempfile.TemporaryDirectory(prefix='outpost-zip-test-') as tmp:
         for info in original.infolist():
             changed.writestr(info, original.read(info))
         for i in range(200):
-            changed.writestr(f'outpost-1.1.3/extra-{i}', b'')
+            changed.writestr(f'{PREFIX}extra-{i}', b'')
     raw = bytearray(spoof.read_bytes())
     end = len(raw) - 62
     struct.pack_into('<HH', raw, end + 8, 1, 1)
@@ -80,7 +81,7 @@ with tempfile.TemporaryDirectory(prefix='outpost-zip-test-') as tmp:
     # much more data. BZIP2 is rejected and DEFLATE reads stay bounded.
     for method in (zipfile.ZIP_DEFLATED, zipfile.ZIP_BZIP2):
         forged = directory / f'forged-{method}.zip'
-        name = 'outpost-1.1.3/README.md'
+        name = PREFIX + 'README.md'
         with zipfile.ZipFile(good) as original, zipfile.ZipFile(forged, 'w') as changed:
             changed.comment = original.comment
             original_info = original.getinfo(name)
@@ -119,17 +120,17 @@ with tempfile.TemporaryDirectory(prefix='outpost-zip-test-') as tmp:
             changed.comment = original.comment
             for info in original.infolist():
                 data = original.read(info)
-                if mutate == 'link' and info.filename == 'outpost-1.1.3/README.md':
+                if mutate == 'link' and info.filename == PREFIX + 'README.md':
                     info.external_attr = 0o120777 << 16
                 changed.writestr(info, data)
             if mutate == 'case':
-                changed.writestr('outpost-1.1.3/readme.md', b'x')
+                changed.writestr(PREFIX + 'readme.md', b'x')
             if mutate == 'traversal':
-                changed.writestr('outpost-1.1.3/../outside', b'x')
+                changed.writestr(PREFIX + '../outside', b'x')
         if mutate == 'crc':
             raw = bytearray(malformed.read_bytes())
             with zipfile.ZipFile(malformed) as package:
-                info = package.getinfo('outpost-1.1.3/README.md')
+                info = package.getinfo(PREFIX + 'README.md')
                 central = package.start_dir
             while raw[central:central + 4] == b'PK\x01\x02':
                 lengths = struct.unpack_from('<3H', raw, central + 28)

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.4
+
+- Publish the current dependencies, hardened source-package verification, CI and checked Worker runtime declarations in a new source delivery; the earlier 1.1.3 archive remains immutable.
+- Update Vite from 8.2.4 to 8.3.7 with patched Rolldown for [GHSA-p4f5-76q4-ffq7](https://github.com/vitejs/vite/security/advisories/GHSA-p4f5-76q4-ffq7). The affected condition is a network-exposed development server, separate from the deployed production Worker.
+- Align PostCSS to 8.5.33 so the patched bundler and Tailwind adapter share compatible types; retain strict TypeScript checks.
+- Derive archive-verifier test paths from the current package version so release verification continues to exercise legitimate and malformed archives after a version change.
+- Align installation and recovery references with this release. Preserve the local workspace, backup schema, scoring, human locks, capacity rules and fourteen tools.
+
 ## 1.1.3
 
 - Count UTF-8 bytes consistently for imported and exported backups, and explain how to shorten an oversized backup without changing the workspace.
