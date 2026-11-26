@@ -97,11 +97,25 @@ test.afterEach(async ({ page }) => expect(errors.get(page)).toEqual([]));
 test('native discovery exposes fourteen titled schemas and reads an empty review', async ({
   page,
 }) => {
-  const tools = await page.evaluate(async () =>
-    (document.modelContext as unknown as NativeContext).getTools(),
-  );
+  const tools = await page.evaluate(async () => {
+    const native = document.modelContext as unknown as NativeContext;
+    // Read native tool attributes before Playwright serializes the result.
+    return (await native.getTools()).map((tool) => ({
+      name: tool.name,
+      title: tool.title,
+      inputSchema: tool.inputSchema,
+      annotations: tool.annotations && {
+        readOnlyHint: tool.annotations.readOnlyHint,
+        untrustedContentHint: tool.annotations.untrustedContentHint,
+      },
+      origin: tool.origin,
+    }));
+  });
   for (const contract of createWebMcpTools({} as WorkspaceApi)) {
-    const actual = tools.find((tool) => tool.name === contract.name)!;
+    const actual = tools.find((tool) => tool.name === contract.name);
+    if (!actual) {
+      throw new Error(`Native discovery did not return ${contract.name}`);
+    }
     expect(actual.title).toBe(contract.title);
     expect(
       typeof actual.inputSchema === 'string'
