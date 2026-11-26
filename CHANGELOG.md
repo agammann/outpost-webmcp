@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.5
+
+- Disable framework ISR for the entry document and apply private mandatory revalidation to its HTML and RSC variants. Shared caches must not retain documents that reference replaceable build assets; browser HTTP storage may retain generic HTML but must revalidate it.
+- Add repeated production-Worker GET/HEAD and RSC checks, exact referenced JS/CSS delivery and missing-asset regression coverage. Preserve the native lifecycle and actual local back-forward-cache requirements.
+- This reduces future stale-document retention risk after a post-deployment startup stall referenced retired assets. It does not establish the earlier failure's root cause, guarantee atomic platform rollouts or purge previously cached HTML.
+- Preserve all browser-local reviews, backups, locks, scoring, capacity rules, fourteen tools and static asset policies. The verified 1.1.4 source release remains immutable.
+
 ## 1.1.4
 
 - Publish the current dependencies, hardened source-package verification, CI and checked Worker runtime declarations in a new source delivery; the earlier 1.1.3 archive remains immutable.

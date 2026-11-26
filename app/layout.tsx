@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
 
+export const dynamic = 'force-dynamic';
+
 const siteUrl = 'https://outpost-webmcp.alx21.chatgpt.site';
 
 const structuredData = {

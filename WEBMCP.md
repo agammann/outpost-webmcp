@@ -43,7 +43,7 @@ The `create_remediation_sprint` result includes selected IDs and used days. Veri
 
 Tools register after workspace storage loads and validates. Registrations use an AbortSignal and are removed on effect cleanup and `pagehide`, then restored on a persisted `pageshow`. A corrupt store or stale tab withdraws tools and blocks editing until recovery/reload. The status follows registration readiness. Failed saves return errors without reporting success.
 
-`pnpm test` checks domain and storage invariants. `pnpm test:e2e` runs eight ordinary-browser scenarios, including an injected registration adapter. `pnpm test:webmcp` runs five separate scenarios with the browser's native API and no registration shim. It checks all 14 schemas and titles, executes every tool on a fictional example, verifies visible edits and reload persistence, and exercises locks, capacity, Undo, invalid inputs, storage failure, stale tabs, and actual back-forward caching.
+`pnpm test` checks domain and storage invariants. `pnpm test:e2e` runs nine ordinary-browser scenarios, including an injected registration adapter. `pnpm test:webmcp` runs five separate scenarios with the browser's native API and no registration shim. It checks all 14 schemas and titles, executes every tool on a fictional example, verifies visible edits and reload persistence, and exercises locks, capacity, Undo, invalid inputs, storage failure, stale tabs, and actual back-forward caching.
 
 Build first, then run the suites sequentially:
 

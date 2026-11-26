@@ -36,7 +36,13 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/',
-        headers: securityHeaders,
+        headers: [
+          ...securityHeaders,
+          {
+            key: 'Cache-Control',
+            value: 'private, no-cache, max-age=0, must-revalidate',
+          },
+        ],
       },
       {
         source: '/:path*',
