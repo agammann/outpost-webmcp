@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.5
+
+- Disable framework ISR for the entry document and apply private mandatory revalidation to its HTML and RSC variants. Shared caches must not retain documents that reference replaceable build assets; browser HTTP storage may retain generic HTML but must revalidate it.
+- Add repeated production-Worker GET/HEAD and RSC checks, exact referenced JS/CSS delivery and missing-asset regression coverage. Preserve the native lifecycle and actual local back-forward-cache requirements.
+- This reduces future stale-document retention risk after a post-deployment startup stall referenced retired assets. It does not establish the earlier failure's root cause, guarantee atomic platform rollouts or purge previously cached HTML.
+- Preserve all browser-local reviews, backups, locks, scoring, capacity rules, fourteen tools and static asset policies. The verified 1.1.4 source release remains immutable.
+
+## 1.1.4
+
+- Publish the current dependencies, hardened source-package verification, CI and checked Worker runtime declarations in a new source delivery; the earlier 1.1.3 archive remains immutable.
+- Update Vite from 8.2.4 to 8.3.7 with patched Rolldown for [GHSA-p4f5-76q4-ffq7](https://github.com/vitejs/vite/security/advisories/GHSA-p4f5-76q4-ffq7). The affected condition is a network-exposed development server, separate from the deployed production Worker.
+- Align PostCSS to 8.5.33 so the patched bundler and Tailwind adapter share compatible types; retain strict TypeScript checks.
+- Derive archive-verifier test paths from the current package version so release verification continues to exercise legitimate and malformed archives after a version change.
+- Align installation and recovery references with this release. Preserve the local workspace, backup schema, scoring, human locks, capacity rules and fourteen tools.
+
 ## 1.1.3
 
 - Count UTF-8 bytes consistently for imported and exported backups, and explain how to shorten an oversized backup without changing the workspace.
