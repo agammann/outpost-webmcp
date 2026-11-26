@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 
 async function open(page: Page) {
   await page.goto('/');
@@ -37,6 +37,56 @@ async function example(page: Page) {
     page.getByRole('heading', { name: 'Atlas example review' }),
   ).toBeVisible();
 }
+
+test('entry document revalidates privately and references complete client assets', async ({
+  request,
+}) => {
+  let html = '';
+  for (let round = 0; round < 2; round++) {
+    for (const path of ['/', '/?_rsc=release-cache-check']) {
+      for (const method of ['GET', 'HEAD']) {
+        const response = await request.fetch(path, {
+          method,
+          headers: path.includes('_rsc') ? { RSC: '1' } : {},
+        });
+        expect(response.status()).toBe(200);
+        const policy = response.headers()['cache-control'];
+        expect(policy).toContain('private');
+        expect(policy).toContain('no-cache');
+        expect(policy).toContain('max-age=0');
+        expect(policy).toContain('must-revalidate');
+        expect(policy).not.toMatch(/s-maxage|stale-while-revalidate|no-store/);
+        if (method === 'HEAD') expect((await response.body()).length).toBe(0);
+        else if (path === '/') html = await response.text();
+      }
+    }
+  }
+  const assets = [
+    ...new Set(
+      [...html.matchAll(/(?:src|href)="([^"]+)"/g)]
+        .map((match) => match[1])
+        .filter(
+          (path) =>
+            path.startsWith('/_next/static/') && /\.(js|css)$/.test(path),
+        ),
+    ),
+  ];
+  expect(assets.some((path) => path.endsWith('.js'))).toBe(true);
+  expect(assets.some((path) => path.endsWith('.css'))).toBe(true);
+  for (const path of assets) {
+    const response = await request.get(path);
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toMatch(
+      path.endsWith('.css') ? /text\/css/ : /(?:java|ecma)script/,
+    );
+    expect(await response.body()).toEqual(await readFile('dist/client' + path));
+  }
+  expect(
+    (
+      await request.get('/_next/static/chunks/missing-outpost-release-check.js')
+    ).status(),
+  ).toBe(404);
+});
 test('personal finding → note → sprint → resolve → backup → restore', async ({
   page,
 }) => {
